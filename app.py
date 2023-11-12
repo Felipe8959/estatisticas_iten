@@ -59,7 +59,7 @@ df_dados4_mes = df_dados4_mes.rename(index=meses_do_ano)
 
 
 # Menu de filtros
-#st.sidebar.header("Filtros")
+# st.sidebar.header("Filtros")
 #selected_column = st.sidebar.selectbox("Escolha uma coluna para filtro", df.columns)
 #selected_value = st.sidebar.text_input(f"Filtrar por valor em '{selected_column}'", "")
 
