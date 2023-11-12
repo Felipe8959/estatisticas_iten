@@ -10,12 +10,12 @@ st.set_page_config(page_title="Controle REP", page_icon="✅", layout="wide", in
 
 arquivo = "relordemservicogeral.xls"
 
-#Lê o arquivo Excel com a linha 6 como cabeçalho
+# Lê o arquivo Excel com a linha 6 como cabeçalho
 df = pd.read_excel(arquivo, header=6)
 
-#Exclui linhas onde o conteúdo da terceira coluna está vazio
+# Exclui linhas onde o conteúdo da terceira coluna está vazio
 df = df.dropna(subset=[df.columns[2]])
-#Exclui colunas onde o conteúdo da sexta linha esteja vazio
+# Exclui colunas onde o conteúdo da sexta linha esteja vazio
 df = df.dropna(axis=1, subset=[5])
 
 date_format = df.columns[8:12]
