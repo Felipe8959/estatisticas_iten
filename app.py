@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-import matplotlib.pyplot as plt
 import calendar
 import plotly.express as px
 import locale
@@ -71,7 +70,10 @@ df_dados4_mes = df_dados4_mes.rename(index=meses_do_ano)
 mes_atual = 'Junho'
 ano_atual = '2023'
 
-st.markdown(f"<h2 style='text-align: center;'>Relatório mensal ITEN ({mes_atual}/{ano_atual})</h2>", unsafe_allow_html=True)
+st.markdown(
+    f"<h2 style='text-align: center;'>Relatório mensal ITEN ({mes_atual}/{ano_atual})</h2>",
+    unsafe_allow_html=True
+    )
 
 # Dados
 #st.header("Dados Filtrados")
