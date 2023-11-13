@@ -30,7 +30,7 @@ df_dados = pd.read_excel(arquivo_dados, sheet_name="atrasos")
 df_dados = df_dados.rename(index={0: 'Técnicos', 1: 'REP'})
 
 df_dados_mes = pd.read_excel(arquivo_dados, sheet_name="atrasos2")
-meses_do_ano = {i: calendar.month_name[i] for i in range(1, 13)}
+meses_do_ano = {i: calendar.month_name[i] for i in range(0, 12)}
 df_dados_mes = df_dados_mes.rename(index=meses_do_ano)
 
 # Revisões
@@ -38,7 +38,7 @@ df_dados2 = pd.read_excel(arquivo_dados, sheet_name="revisoes")
 df_dados2 = df_dados2.rename(index={0: 'Técnicos', 1: 'REP'})
 
 df_dados2_mes = pd.read_excel(arquivo_dados, sheet_name="revisoes2")
-meses_do_ano = {i: calendar.month_name[i] for i in range(1, 13)}
+meses_do_ano = {i: calendar.month_name[i] for i in range(0, 12)}
 df_dados2_mes = df_dados2_mes.rename(index=meses_do_ano)
 
 # Envios
@@ -46,7 +46,7 @@ df_dados3 = pd.read_excel(arquivo_dados, sheet_name="envios")
 df_dados3 = df_dados3.rename(index={0: 'Técnicos', 1: 'REP'})
 
 df_dados3_mes = pd.read_excel(arquivo_dados, sheet_name="envios2")
-meses_do_ano = {i: calendar.month_name[i] for i in range(1, 13)}
+meses_do_ano = {i: calendar.month_name[i] for i in range(0, 12)}
 df_dados3_mes = df_dados3_mes.rename(index=meses_do_ano)
 
 # Erros
@@ -54,7 +54,7 @@ df_dados4 = pd.read_excel(arquivo_dados, sheet_name="erros")
 df_dados4 = df_dados4.rename(index={0: 'Técnicos', 1: 'REP'})
 
 df_dados4_mes = pd.read_excel(arquivo_dados, sheet_name="erros2")
-meses_do_ano = {i: calendar.month_name[i] for i in range(1, 13)}
+meses_do_ano = {i: calendar.month_name[i] for i in range(0, 12)}
 df_dados4_mes = df_dados4_mes.rename(index=meses_do_ano)
 
 
@@ -207,10 +207,10 @@ with col1:
 
 # Total de erros
 with col2:
-    fig_total_revisoes = px.line(df_dados4_mes, labels={'value': 'Qtd de erros'}, title=f'Controle de erros 2023 Total: {soma_total4_mes}')
-    fig_total_revisoes.update_xaxes(title_text='Mês')
-    fig_total_revisoes.update_layout(showlegend=False)
-    st.plotly_chart(fig_total_revisoes, use_container_width=True)
+    fig_total_erros = px.line(df_dados4_mes, labels={'value': 'Qtd de erros'}, title=f'Controle de erros 2023 Total: {soma_total4_mes}')
+    fig_total_erros.update_xaxes(title_text='Mês')
+    fig_total_erros.update_layout(showlegend=False)
+    st.plotly_chart(fig_total_erros, use_container_width=True)
 
 
 
@@ -246,16 +246,16 @@ try:
         elif len(selected_months) == 2:
             # Filtra os dados para os meses e o tipo de comparação selecionados
             if selected_comparison_type == "Atrasos":
-                df_selected_data = df_dados_mes.loc[selected_months]
+                df_selected_data = df_dados_mes.loc[df_dados_mes.index.isin(selected_months)]
                 selected_columns = df_dados_mes.columns
             elif selected_comparison_type == "Revisões":
-                df_selected_data = df_dados2_mes.loc[selected_months]
+                df_selected_data = df_dados2_mes.loc[df_dados_mes.index.isin(selected_months)]
                 selected_columns = df_dados2_mes.columns
             elif selected_comparison_type == "Envios":
-                df_selected_data = df_dados3_mes.loc[selected_months]
+                df_selected_data = df_dados3_mes.loc[df_dados_mes.index.isin(selected_months)]
                 selected_columns = df_dados3_mes.columns
             elif selected_comparison_type == "Erros":
-                df_selected_data = df_dados4_mes.loc[selected_months]
+                df_selected_data = df_dados4_mes.loc[df_dados_mes.index.isin(selected_months)]
                 selected_columns = df_dados4_mes.columns
             # Verifica se o DataFrame resultante está vazio
 
