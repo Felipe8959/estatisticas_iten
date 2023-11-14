@@ -6,7 +6,7 @@ import locale
 import numpy as np
 locale.setlocale(locale.LC_TIME, "pt_BR")
 
-st.set_page_config(page_title="Controle REP", page_icon="✅", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(page_title="Controle REP", page_icon="✅", initial_sidebar_state="expanded")
 
 arquivo = "relordemservicogeral.xls"
 
@@ -72,7 +72,7 @@ mes_atual = 'Junho'
 ano_atual = '2023'
 
 st.markdown(
-    f"<h1 style='text-align: center;'>Relatório mensal ITEN ({mes_atual}/{ano_atual})</h1>",
+    f"<h2 style='text-align: center; font-size: 26px'>Relatório mensal ITEN ({mes_atual}/{ano_atual})</h2>",
     unsafe_allow_html=True
     )
 
@@ -85,7 +85,8 @@ st.markdown(
 #--------------- Gráficos ---------------#
 #----------------------------------------#
 
-st.header("🕐 Controle mensal")
+#st.header("")
+st.markdown(f"<h3 style='font-size: 24px'>🕐 Controle mensal</h3>", unsafe_allow_html=True)
 
 # Calcular estatísticas
 maior_valor = df_dados.values.max()
