@@ -214,7 +214,7 @@ st.plotly_chart(fig_total_revisoes, use_container_width=True)
 st.header(f"📉 Comparação entre dois meses")
 
 # Lista de todos os meses do ano
-all_months = ['média anual'] + list(calendar.month_name)[1:]
+all_months = list(calendar.month_name)[1:] + ['média anual']
 
 # Adicione uma opção para selecionar o tipo de comparação
 selected_comparison_type = st.selectbox(
@@ -229,7 +229,7 @@ try:
         selected_months = st.multiselect(
             "Selecione dois meses para comparação:",
             all_months,
-            default=[], # Inicia vazio
+            default=['média anual'], # Inicia vazio
             key='selected_months'  # Adiciona uma chave para identificar o componente
         )
 
@@ -321,9 +321,15 @@ try:
 
             # Exibe um gráfico de linha para a comparação
             fig_comparacao = px.line(df_selected_data, labels={'value': f'Qtd de {selected_comparison_type.lower()}'}, title=f'Total de {selected_comparison_type.lower()} por mês')
-            fig_comparacao.update_xaxes(title_text='Mês')
-            fig_comparacao.update_layout(legend_title_text='Legenda')
+            categorias_ordenadas = ['média anual'] + df_selected_data.index.tolist()
+            if 'média anual' in selected_months:
+                fig_comparacao.update_xaxes(title_text='Mês', categoryorder='array', categoryarray=categorias_ordenadas)
+            else:
+                fig_comparacao.update_xaxes(title_text='Mês', categoryorder='total ascending')
             st.plotly_chart(fig_comparacao, use_container_width=True)
+            
+            print(selected_months)
+
                 
         elif len(selected_months) == 1:
             st.warning("Selecione duas colunas para comparação.")
