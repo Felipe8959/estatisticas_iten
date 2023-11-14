@@ -59,26 +59,56 @@ df_dados4_mes = df_dados4_mes.rename(index=meses_do_ano)
 
 
 
-# Menu de filtros
-# st.sidebar.header("Filtros")
-#selected_column = st.sidebar.selectbox("Escolha uma coluna para filtro", df.columns)
-#selected_value = st.sidebar.text_input(f"Filtrar por valor em '{selected_column}'", "")
+#--------------- Definir mês e ano ---------------#
 
-# Filtros
-#if selected_value:
-    #df = df[df[selected_column] == selected_value]
+df_info = pd.read_excel(arquivo_dados, sheet_name='info', header=None)
 
-mes_atual = 'Junho'
-ano_atual = '2023'
+indice_mes = df_info[df_info.eq("#mes").any(axis=1)].index
+indice_ano = df_info[df_info.eq("#ano").any(axis=1)].index
+
+# Verificar se '#mes' foi encontrado
+if not indice_mes.empty:
+    # Obter o valor da célula abaixo de '#mes'
+    mes_atual = df_info.iloc[indice_mes[0] + 1, 0]
+
+    # Verificar se o valor é um número inteiro
+    if isinstance(mes_atual, (int, float)):
+        mes_atual = int(mes_atual)
+
+        # Verificar se o número do mês está dentro do intervalo válido (1 a 12)
+        if 1 <= mes_atual <= 12:
+            mes_atual = calendar.month_name[mes_atual]
+            print(f"O número {mes_atual} corresponde ao mês de {mes_atual}")
+        else:
+            print(f"Erro: Número do mês fora do intervalo válido (1 a 12): {mes_atual}")
+    else:
+        print(f"Erro: Valor abaixo de '#mes' não é um número: {mes_atual}")
+else:
+    print("#mes não encontrado na aba 'info'")
+
+
+# Busca pelo valor correspondente a '#ano'
+indice_ano = df_info[df_info.eq("#ano").any(axis=1)].index
+
+# Verificar se '#ano' foi encontrado
+if not indice_ano.empty:
+    # Obter o valor da célula abaixo de '#ano'
+    ano_atual = df_info.iloc[indice_ano[0] + 1, 1]
+
+    # Converter para inteiro se possível
+    try:
+        ano_atual = int(ano_atual)
+        print(f"Ano de {ano_atual}")
+    except ValueError:
+        print(f"Erro: Valor abaixo de '#ano' não é um número: {ano_atual}")
+else:
+    print("#ano não encontrado na aba 'info'")
+
 
 st.markdown(
     f"<h2 style='text-align: center; font-size: 26px'>Relatório mensal ITEN ({mes_atual}/{ano_atual})</h2>",
     unsafe_allow_html=True
     )
-
-# Dados
-#st.header("Dados Filtrados")
-#st.write(df)
 
 
 #----------------------------------------#
@@ -174,7 +204,7 @@ st.plotly_chart(fig_bar_chart3, use_container_width=True)
 
 # Total de Envios
 fig_total_envios = px.line(df_dados3_mes,
-                            labels={'value': 'Total de envios'},
+                            labels={'value': 'Qtd de envios'},
                             title=f'Controle de envios {ano_atual} - Total: {soma_total3_mes}')
 fig_total_envios.update_xaxes(title_text='Mês')
 fig_total_envios.update_layout(legend_title_text='Legenda')
@@ -340,3 +370,17 @@ try:
         st.info("Selecione um tipo de comparação.")
 except KeyError as e:
     st.warning(f"Erro ao acessar dados: {e}")
+
+
+# Menu de filtros
+#st.sidebar.header("Filtros")
+#selected_column = st.sidebar.selectbox("Escolha uma coluna para filtro", df.columns)
+#selected_value = st.sidebar.text_input(f"Filtrar por valor em '{selected_column}'", "")
+
+# Filtros
+#if selected_value:
+    #df = df[df[selected_column] == selected_value]
+
+# Dados
+#st.header("Dados Filtrados")
+#st.write(df)
