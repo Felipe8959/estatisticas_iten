@@ -104,7 +104,7 @@ else:
 
 
 st.markdown(
-    f"<h2 style='text-align: center; font-size: 26px'>Relatório mensal ITEN ({mes_atual}/{ano_atual})</h2>",
+    f"<h2 style='text-align: center; font-size: 24px'>Relatório mensal ITEN ({mes_atual}/{ano_atual})</h2>",
     unsafe_allow_html=True
     )
 
@@ -149,7 +149,8 @@ st.plotly_chart(fig_total_atrasos, use_container_width=True)
 
 
 
-st.header("🔧 Revisões")
+#st.header("🔧 Revisões")
+st.markdown(f"<h3 style='font-size: 24px'>🔧 Revisões</h3>", unsafe_allow_html=True)
 
 # Calcular estatísticas
 maior_valor2 = df_dados2.values.max()
@@ -179,7 +180,8 @@ fig_total_revisoes.update_layout(legend_title_text='Legenda')
 st.plotly_chart(fig_total_revisoes, use_container_width=True)
 
 
-st.header("✉️ Envios")
+#st.header("✉️ Envios")
+st.markdown(f"<h3 style='font-size: 24px'>✉️ Envios</h3>", unsafe_allow_html=True)
 
 # Calcular estatísticas
 maior_valor3 = df_dados3.values.max()
@@ -209,7 +211,9 @@ fig_total_envios.update_layout(legend_title_text='Legenda')
 st.plotly_chart(fig_total_envios, use_container_width=True)
 
 
-st.header("❌ Erros")
+#st.header("❌ Erros")
+st.markdown(f"<h3 style='font-size: 24px'>❌ Erros</h3>", unsafe_allow_html=True)
+
 col1, col2 = st.columns(2)
 
 maior_valor4 = df_dados4.values.max()
@@ -240,7 +244,8 @@ st.plotly_chart(fig_total_revisoes, use_container_width=True)
 
 # ------- Comparação entre dois meses ------- #
 
-st.header(f"📉 Comparação entre dois meses")
+st.header(f"📉 Desempenho")
+#st.markdown(f"<h3 style='font-size: 24px'>📉 Desempenho</h3>", unsafe_allow_html=True)
 
 # Lista de todos os meses do ano
 all_months = list(calendar.month_name)[1:] + ['média anual']
