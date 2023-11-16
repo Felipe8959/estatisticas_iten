@@ -4,6 +4,7 @@ import calendar
 import plotly.express as px
 import locale
 import numpy as np
+
 locale.setlocale(locale.LC_TIME, "pt_BR")
 
 st.set_page_config(page_title="Controle REP", page_icon="✅", initial_sidebar_state="expanded")
@@ -33,6 +34,15 @@ df_dados_mes = pd.read_excel(arquivo_dados, sheet_name="atrasos2")
 meses_do_ano = {i: calendar.month_name[i] for i in range(0, 13)}
 df_dados_mes = df_dados_mes.rename(index=meses_do_ano)
 
+maior_valor = df_dados.values.max()
+menor_valor = df_dados.values.min()
+soma_total = df_dados.values.sum()
+soma_total_mes = int(df_dados_mes.sum().sum())
+
+percentuais = (df_dados.values / soma_total) * 100
+percentuais_formatados = [f'({percentual:.0f}%)' for percentual in percentuais.flatten()]
+
+
 # Revisões
 df_dados2 = pd.read_excel(arquivo_dados, sheet_name="revisoes")
 df_dados2 = df_dados2.rename(index={0: 'Técnicos', 1: 'REP'})
@@ -40,6 +50,13 @@ df_dados2 = df_dados2.rename(index={0: 'Técnicos', 1: 'REP'})
 df_dados2_mes = pd.read_excel(arquivo_dados, sheet_name="revisoes2")
 meses_do_ano = {i: calendar.month_name[i] for i in range(0, 13)}
 df_dados2_mes = df_dados2_mes.rename(index=meses_do_ano)
+
+maior_valor2 = df_dados2.values.max()
+menor_valor2 = df_dados2.values.min()
+soma_total2 = df_dados2.values.sum()
+soma_total2_mes = int(df_dados2_mes.sum().sum())
+percentuais2 = (df_dados2.values / soma_total2) * 100
+percentuais_formatados2 = [f'({percentual:.0f}%)' for percentual in percentuais2.flatten()]
 
 # Envios
 df_dados3 = pd.read_excel(arquivo_dados, sheet_name="envios")
@@ -49,6 +66,13 @@ df_dados3_mes = pd.read_excel(arquivo_dados, sheet_name="envios2")
 meses_do_ano = {i: calendar.month_name[i] for i in range(0, 13)}
 df_dados3_mes = df_dados3_mes.rename(index=meses_do_ano)
 
+maior_valor3 = df_dados3.values.max()
+menor_valor3 = df_dados3.values.min()
+soma_total3 = df_dados3.values.sum()
+soma_total3_mes = int(df_dados3_mes.sum().sum())
+percentuais3 = (df_dados3.values / soma_total3) * 100
+percentuais_formatados3 = [f'({percentual:.0f}%)' for percentual in percentuais3.flatten()]
+
 # Erros
 df_dados4 = pd.read_excel(arquivo_dados, sheet_name="erros")
 df_dados4 = df_dados4.rename(index={0: 'Técnicos', 1: 'REP'})
@@ -56,6 +80,13 @@ df_dados4 = df_dados4.rename(index={0: 'Técnicos', 1: 'REP'})
 df_dados4_mes = pd.read_excel(arquivo_dados, sheet_name="erros2")
 meses_do_ano = {i: calendar.month_name[i] for i in range(0, 13)}
 df_dados4_mes = df_dados4_mes.rename(index=meses_do_ano)
+
+maior_valor4 = df_dados4.values.max()
+menor_valor4 = df_dados4.values.min()
+soma_total4 = df_dados4.values.sum()
+soma_total4_mes = int(df_dados4_mes.sum().sum())
+percentuais4 = (df_dados4.values / soma_total4) * 100
+percentuais_formatados4 = [f'({percentual:.0f}%)' for percentual in percentuais4.flatten()]
 
 
 
@@ -78,7 +109,6 @@ if not indice_mes.empty:
         # Verificar se o número do mês está dentro do intervalo válido (1 a 12)
         if 1 <= mes_atual <= 12:
             mes_atual = calendar.month_name[mes_atual]
-            print(f"O número {mes_atual} corresponde ao mês de {mes_atual}")
         else:
             print(f"Erro: Número do mês fora do intervalo válido (1 a 12): {mes_atual}")
     else:
@@ -98,17 +128,377 @@ if not indice_ano.empty:
     # Converter para inteiro se possível
     try:
         ano_atual = int(ano_atual)
-        print(f"Ano de {ano_atual}")
     except ValueError:
         print(f"Erro: Valor abaixo de '#ano' não é um número: {ano_atual}")
 else:
     print("#ano não encontrado na aba 'info'")
 
 
+
 st.markdown(
-    f"<h2 style='text-align: center; font-size: 26px'>Relatório mensal ITEN ({mes_atual}/{ano_atual})</h2>",
+    f"<h2 style='text-align: center; font-size: 32px'>Relatório mensal ITEN ({mes_atual}/{ano_atual})</h2>",
     unsafe_allow_html=True
     )
+
+
+# ------------------------------------------- #
+# ------- Comparação entre dois meses ------- #
+# ------------------------------------------- #
+
+st.markdown(
+    f"<p style='text-align: left; font-size: 24px'><strong>📉 Desempenho</strong></p>",
+    unsafe_allow_html=True
+    )
+#st.markdown(f"<h3 style='font-size: 24px'>📉 Desempenho</h3>", unsafe_allow_html=True)
+
+# Lista de todos os meses do ano
+all_months = list(calendar.month_name)[1:] + ['média anual']
+
+# Adicione uma opção para selecionar o tipo de comparação
+#selected_comparison_type = st.selectbox(
+    #"Selecione o tipo de comparação:",
+    #["Atrasos", "Revisões", "Envios", "Erros"]
+#)
+
+
+try:
+    # Adicione uma opção para selecionar dois meses
+    selected_months =['média anual', mes_atual]
+
+    st.markdown(f"<h1 style='font-size: 24px'>Comparação entre {selected_months[1]} e {selected_months[0]}</h1>", unsafe_allow_html=True)
+
+    if len(selected_months) > 2:
+        st.warning("Selecione apenas dois meses para comparação.")
+        selected_months = selected_months.sorted()[:2]  # Pega apenas os dois primeiros meses
+
+    # Verifica se pelo menos dois meses foram selecionados
+    elif len(selected_months) == 2:
+
+        # Ordena os meses automaticamente
+        selected_months = sorted(selected_months, key=lambda x: (list(calendar.month_name).index(x) if x in list(calendar.month_name) else float('inf')))
+        
+
+        # ----------------------- #
+        # ------- Atrasos ------- #
+        # ----------------------- #
+        selected_comparison_type = 'Atrasos'
+
+        st.markdown(f"<h1 style='font-size: 20px'>🕐 Atrasos ({soma_total})</h1>", unsafe_allow_html=True)
+
+        # Filtra os dados para os meses e o tipo de comparação selecionados
+        df_selected_data = df_dados_mes.loc[df_dados4_mes.index.isin(selected_months)]
+        selected_columns = df_dados_mes.columns
+
+        # Adiciona uma condição para a média anual
+        if 'média anual' in selected_months:
+            # Filtra os dados para os meses e o tipo de comparação selecionados
+            df_selected_data = df_dados_mes.loc[df_dados4_mes.index.isin(selected_months)]
+            df_media_anual = df_dados_mes.mean().round(0)
+
+            # Adiciona a média anual como uma nova linha no DataFrame
+            df_selected_data.loc['média anual'] = df_media_anual
+
+        
+        # Soma todas as colunas e verifica se houve aumento ou queda
+        soma_mais_recente = df_selected_data.loc[selected_months[1]].sum()
+        soma_anterior = df_selected_data.loc[selected_months[0]].sum()
+        if 'média anual' in selected_months:
+            aumento_ou_queda = "aumento ⬆" if soma_mais_recente < soma_anterior else "queda ⬇"
+        else:
+            aumento_ou_queda = "aumento ⬆" if soma_mais_recente > soma_anterior else "queda ⬇"
+        
+        # Calcula a diferença entre os meses selecionados
+        diferenca_dados = df_selected_data.diff().iloc[1]
+        diferenca_total = int(abs(diferenca_dados.sum()))
+
+        if diferenca_total == 0:
+            aumento_ou_queda = 'estabilização'
+
+        # Adiciona formatação de cor ao texto 'queda', 'aumento' e estabilização
+        if aumento_ou_queda == 'aumento ⬆':
+            color = 'red'
+        elif aumento_ou_queda == 'queda ⬇':
+            color = 'green'
+        else:
+            color = 'blue'
+    
+
+        styled_text = f"<span style='color: {color};'>{aumento_ou_queda}</span>"
+
+        # Exibe o texto de comparação total
+        st.markdown(f"<strong>Total:</strong> {styled_text} de {diferenca_total} {selected_comparison_type.lower()} entre {selected_months[1]} e {selected_months[0]}.", unsafe_allow_html=True)
+
+        # Exibe o texto de comparação para cada coluna
+        for coluna in selected_columns:
+            if 'média anual' in selected_months:
+                aumento_ou_queda = "aumento ⬆" if df_selected_data.loc[selected_months[1], coluna] < df_selected_data.loc[selected_months[0], coluna] else "queda ⬇"
+            else:
+                aumento_ou_queda = "aumento ⬆" if df_selected_data.loc[selected_months[1], coluna] > df_selected_data.loc[selected_months[0], coluna] else "queda ⬇"
+
+            valor_diferenca = int(abs(diferenca_dados[coluna]))
+
+            if valor_diferenca == 0:
+                aumento_ou_queda = "estabilização"
+                
+            # Adiciona formatação de cor ao texto 'queda', 'aumento' e estabilização
+            if aumento_ou_queda == 'aumento ⬆':
+                color = 'red'
+            elif aumento_ou_queda == 'queda ⬇':
+                color = 'green'
+            else:
+                color = 'blue'
+
+            styled_text = f"<span style='color: {color};'>{aumento_ou_queda}</span>"
+
+            st.markdown(f"<strong>{coluna}</strong>: {styled_text} de {valor_diferenca} {selected_comparison_type.lower()} entre {selected_months[1]} e {selected_months[0]}.", unsafe_allow_html=True)
+
+
+
+        # ---------------------- #
+        # ------ Revisões ------ #
+        # ---------------------- #
+        selected_comparison_type = 'Revisões'
+
+        st.markdown(f"<h1 style='font-size: 20px'>🔧 Revisões ({soma_total2})</h1>", unsafe_allow_html=True)
+
+        # Filtra os dados para os meses e o tipo de comparação selecionados
+        df_selected_data = df_dados2_mes.loc[df_dados4_mes.index.isin(selected_months)]
+        selected_columns = df_dados2_mes.columns
+
+        # Adiciona uma condição para a média anual
+        if 'média anual' in selected_months:
+            # Filtra os dados para os meses e o tipo de comparação selecionados
+            df_selected_data = df_dados2_mes.loc[df_dados4_mes.index.isin(selected_months)]
+            df_media_anual = df_dados2_mes.mean().round(0)
+
+            # Adiciona a média anual como uma nova linha no DataFrame
+            df_selected_data.loc['média anual'] = df_media_anual
+
+        
+        # Soma todas as colunas e verifica se houve aumento ou queda
+        soma_mais_recente = df_selected_data.loc[selected_months[1]].sum()
+        soma_anterior = df_selected_data.loc[selected_months[0]].sum()
+        if 'média anual' in selected_months:
+            aumento_ou_queda = "aumento ⬆" if soma_mais_recente < soma_anterior else "queda ⬇"
+        else:
+            aumento_ou_queda = "aumento ⬆" if soma_mais_recente > soma_anterior else "queda ⬇"
+        
+        # Calcula a diferença entre os meses selecionados
+        diferenca_dados = df_selected_data.diff().iloc[1]
+        diferenca_total = int(abs(diferenca_dados.sum()))
+
+        if diferenca_total == 0:
+            aumento_ou_queda = 'estabilização'
+
+        # Adiciona formatação de cor ao texto 'queda', 'aumento' e estabilização
+        if aumento_ou_queda == 'aumento ⬆':
+            color = 'red'
+        elif aumento_ou_queda == 'queda ⬇':
+            color = 'green'
+        else:
+            color = 'blue'
+    
+
+        styled_text = f"<span style='color: {color};'>{aumento_ou_queda}</span>"
+
+        # Exibe o texto de comparação total
+        st.markdown(f"<strong>Total:</strong> {styled_text} de {diferenca_total} {selected_comparison_type.lower()} entre {selected_months[1]} e {selected_months[0]}.", unsafe_allow_html=True)
+
+        # Exibe o texto de comparação para cada coluna
+        for coluna in selected_columns:
+            if 'média anual' in selected_months:
+                aumento_ou_queda = "aumento ⬆" if df_selected_data.loc[selected_months[1], coluna] < df_selected_data.loc[selected_months[0], coluna] else "queda ⬇"
+            else:
+                aumento_ou_queda = "aumento ⬆" if df_selected_data.loc[selected_months[1], coluna] > df_selected_data.loc[selected_months[0], coluna] else "queda ⬇"
+
+            valor_diferenca = int(abs(diferenca_dados[coluna]))
+
+            if valor_diferenca == 0:
+                aumento_ou_queda = "estabilização"
+                
+            # Adiciona formatação de cor ao texto 'queda', 'aumento' e estabilização
+            if aumento_ou_queda == 'aumento ⬆':
+                color = 'red'
+            elif aumento_ou_queda == 'queda ⬇':
+                color = 'green'
+            else:
+                color = 'blue'
+
+            styled_text = f"<span style='color: {color};'>{aumento_ou_queda}</span>"
+
+            st.markdown(f"<strong>{coluna}</strong>: {styled_text} de {valor_diferenca} {selected_comparison_type.lower()} entre {selected_months[1]} e {selected_months[0]}.", unsafe_allow_html=True)
+
+
+
+        # ---------------------- #
+        # ------- Envios ------- #
+        # ---------------------- #
+        selected_comparison_type = 'Envios'
+
+        st.markdown(f"<h1 style='font-size: 20px'>✉️ Envios ({soma_total3})</h1>", unsafe_allow_html=True)
+
+        # Filtra os dados para os meses e o tipo de comparação selecionados
+        df_selected_data = df_dados3_mes.loc[df_dados4_mes.index.isin(selected_months)]
+        selected_columns = df_dados3_mes.columns
+
+        # Adiciona uma condição para a média anual
+        if 'média anual' in selected_months:
+            # Filtra os dados para os meses e o tipo de comparação selecionados
+            df_selected_data = df_dados3_mes.loc[df_dados4_mes.index.isin(selected_months)]
+            df_media_anual = df_dados3_mes.mean().round(0)
+
+            # Adiciona a média anual como uma nova linha no DataFrame
+            df_selected_data.loc['média anual'] = df_media_anual
+
+        
+        # Soma todas as colunas e verifica se houve aumento ou queda
+        soma_mais_recente = df_selected_data.loc[selected_months[1]].sum()
+        soma_anterior = df_selected_data.loc[selected_months[0]].sum()
+        if 'média anual' in selected_months:
+            aumento_ou_queda = "aumento ⬆" if soma_mais_recente < soma_anterior else "queda ⬇"
+        else:
+            aumento_ou_queda = "aumento ⬆" if soma_mais_recente > soma_anterior else "queda ⬇"
+        
+        # Calcula a diferença entre os meses selecionados
+        diferenca_dados = df_selected_data.diff().iloc[1]
+        diferenca_total = int(abs(diferenca_dados.sum()))
+
+        if diferenca_total == 0:
+            aumento_ou_queda = 'estabilização'
+
+        # Adiciona formatação de cor ao texto 'queda', 'aumento' e estabilização
+        if aumento_ou_queda == 'aumento ⬆':
+            color = 'green'
+        elif aumento_ou_queda == 'queda ⬇':
+            color = 'red'
+        else:
+            color = 'blue'
+    
+        styled_text = f"<span style='color: {color};'>{aumento_ou_queda}</span>"
+
+        # Exibe o texto de comparação total
+        st.markdown(f"<strong>Total:</strong> {styled_text} de {diferenca_total} {selected_comparison_type.lower()} entre {selected_months[1]} e {selected_months[0]}.", unsafe_allow_html=True)
+
+        # Exibe o texto de comparação para cada coluna
+        for coluna in selected_columns:
+            if 'média anual' in selected_months:
+                aumento_ou_queda = "aumento ⬆" if df_selected_data.loc[selected_months[1], coluna] < df_selected_data.loc[selected_months[0], coluna] else "queda ⬇"
+            else:
+                aumento_ou_queda = "aumento ⬆" if df_selected_data.loc[selected_months[1], coluna] > df_selected_data.loc[selected_months[0], coluna] else "queda ⬇"
+
+            valor_diferenca = int(abs(diferenca_dados[coluna]))
+
+            if valor_diferenca == 0:
+                aumento_ou_queda = "estabilização"
+                
+            # Adiciona formatação de cor ao texto 'queda', 'aumento' e estabilização
+            if aumento_ou_queda == 'aumento ⬆':
+                color = 'green'
+            elif aumento_ou_queda == 'queda ⬇':
+                color = 'red'
+            else:
+                color = 'blue'
+
+            styled_text = f"<span style='color: {color};'>{aumento_ou_queda}</span>"
+
+            st.markdown(f"<strong>{coluna}</strong>: {styled_text} de {valor_diferenca} {selected_comparison_type.lower()} entre {selected_months[1]} e {selected_months[0]}.", unsafe_allow_html=True)
+
+
+        # ----------------------- #
+        # -------- Erros -------- #
+        # ----------------------- #
+        selected_comparison_type = 'Erros'
+
+        st.markdown(f"<h1 style='font-size: 20px'>❌ Erros ({soma_total4})</h1>", unsafe_allow_html=True)
+
+        # Filtra os dados para os meses e o tipo de comparação selecionados
+        df_selected_data = df_dados4_mes.loc[df_dados4_mes.index.isin(selected_months)]
+        selected_columns = df_dados4_mes.columns
+
+        # Adiciona uma condição para a média anual
+        if 'média anual' in selected_months:
+            # Filtra os dados para os meses e o tipo de comparação selecionados
+            df_selected_data = df_dados4_mes.loc[df_dados4_mes.index.isin(selected_months)]
+            df_media_anual = df_dados4_mes.mean().round(0)
+
+            # Adiciona a média anual como uma nova linha no DataFrame
+            df_selected_data.loc['média anual'] = df_media_anual
+
+        
+        # Soma todas as colunas e verifica se houve aumento ou queda
+        soma_mais_recente = df_selected_data.loc[selected_months[1]].sum()
+        soma_anterior = df_selected_data.loc[selected_months[0]].sum()
+        if 'média anual' in selected_months:
+            aumento_ou_queda = "aumento ⬆" if soma_mais_recente < soma_anterior else "queda ⬇"
+        else:
+            aumento_ou_queda = "aumento ⬆" if soma_mais_recente > soma_anterior else "queda ⬇"
+        
+        # Calcula a diferença entre os meses selecionados
+        diferenca_dados = df_selected_data.diff().iloc[1]
+        diferenca_total = int(abs(diferenca_dados.sum()))
+
+        if diferenca_total == 0:
+            aumento_ou_queda = 'estabilização'
+
+        # Adiciona formatação de cor ao texto 'queda', 'aumento' e estabilização
+        if aumento_ou_queda == 'aumento ⬆':
+            color = 'red'
+        elif aumento_ou_queda == 'queda ⬇':
+            color = 'green'
+        else:
+            color = 'blue'
+    
+        styled_text = f"<span style='color: {color};'>{aumento_ou_queda}</span>"
+
+        # Exibe o texto de comparação total
+        st.markdown(f"<strong>Total:</strong> {styled_text} de {diferenca_total} {selected_comparison_type.lower()} entre {selected_months[1]} e {selected_months[0]}.", unsafe_allow_html=True)
+
+        # Exibe o texto de comparação para cada coluna
+        for coluna in selected_columns:
+            if 'média anual' in selected_months:
+                aumento_ou_queda = "aumento ⬆" if df_selected_data.loc[selected_months[1], coluna] < df_selected_data.loc[selected_months[0], coluna] else "queda ⬇"
+            else:
+                aumento_ou_queda = "aumento ⬆" if df_selected_data.loc[selected_months[1], coluna] > df_selected_data.loc[selected_months[0], coluna] else "queda ⬇"
+
+            valor_diferenca = int(abs(diferenca_dados[coluna]))
+
+            if valor_diferenca == 0:
+                aumento_ou_queda = "estabilização"
+                
+            # Adiciona formatação de cor ao texto 'queda', 'aumento' e estabilização
+            if aumento_ou_queda == 'aumento ⬆':
+                color = 'red'
+            elif aumento_ou_queda == 'queda ⬇':
+                color = 'green'
+            else:
+                color = 'blue'
+
+            styled_text = f"<span style='color: {color};'>{aumento_ou_queda}</span>"
+
+            st.markdown(f"<strong>{coluna}</strong>: {styled_text} de {valor_diferenca} {selected_comparison_type.lower()} entre {selected_months[1]} e {selected_months[0]}.", unsafe_allow_html=True)
+
+
+
+
+
+        # Exibe um gráfico de linha para a comparação
+        #fig_comparacao = px.line(df_selected_data, labels={'value': f'Qtd de {selected_comparison_type.lower()}'})
+        #categorias_ordenadas = ['média anual'] + df_selected_data.index.tolist()
+        #fig_comparacao.update_layout(legend_title_text='Legenda')
+        #if 'média anual' in selected_months:
+            #fig_comparacao.update_xaxes(title_text='Mês', categoryorder='array', categoryarray=categorias_ordenadas)
+        #else:
+            #fig_comparacao.update_xaxes(title_text='Mês', categoryorder='total ascending')
+        #st.plotly_chart(fig_comparacao, use_container_width=True)
+        
+            
+    elif len(selected_months) == 1:
+        st.warning("Selecione duas colunas para comparação.")
+    else:
+        st.info("Selecione pelo menos uma coluna para comparação.")
+except KeyError as e:
+    st.warning(f"Erro ao acessar dados: {e}")
+
 
 
 #----------------------------------------#
@@ -116,16 +506,8 @@ st.markdown(
 #----------------------------------------#
 
 #st.header("")
-st.markdown(f"<h3 style='font-size: 24px'>🕐 Controle mensal</h3>", unsafe_allow_html=True)
-
-# Calcular estatísticas
-maior_valor = df_dados.values.max()
-menor_valor = df_dados.values.min()
-soma_total = df_dados.values.sum()
-soma_total_mes = int(df_dados_mes.sum().sum())
-
-percentuais = (df_dados.values / soma_total) * 100
-percentuais_formatados = [f'({percentual:.0f}%)' for percentual in percentuais.flatten()]
+st.markdown(f"<h1 style='font-size: 10px'></h1>", unsafe_allow_html=True)
+st.markdown(f"<h3 style='font-size: 24px'>🕐 Atrasos</h3>", unsafe_allow_html=True)
 
 # Atrasos
 fig_bar_chart = px.bar(df_dados.T,
@@ -151,15 +533,8 @@ st.plotly_chart(fig_total_atrasos, use_container_width=True)
 
 
 
-st.header("🔧 Revisões")
-
-# Calcular estatísticas
-maior_valor2 = df_dados2.values.max()
-menor_valor2 = df_dados2.values.min()
-soma_total2 = df_dados2.values.sum()
-soma_total2_mes = int(df_dados2_mes.sum().sum())
-percentuais2 = (df_dados2.values / soma_total2) * 100
-percentuais_formatados2 = [f'({percentual:.0f}%)' for percentual in percentuais2.flatten()]
+#st.header("🔧 Revisões")
+st.markdown(f"<h3 style='font-size: 24px'>🔧 Revisões</h3>", unsafe_allow_html=True)
 
 # Revisões
 fig_bar_chart2 = px.bar(df_dados2.T, labels={'value': 'Qtd de revisões'}, 
@@ -181,15 +556,9 @@ fig_total_revisoes.update_layout(legend_title_text='Legenda')
 st.plotly_chart(fig_total_revisoes, use_container_width=True)
 
 
-st.header("✉️ Envios")
+#st.header("✉️ Envios")
+st.markdown(f"<h3 style='font-size: 24px'>✉️ Envios</h3>", unsafe_allow_html=True)
 
-# Calcular estatísticas
-maior_valor3 = df_dados3.values.max()
-menor_valor3 = df_dados3.values.min()
-soma_total3 = df_dados3.values.sum()
-soma_total3_mes = int(df_dados3_mes.sum().sum())
-percentuais3 = (df_dados3.values / soma_total3) * 100
-percentuais_formatados3 = [f'({percentual:.0f}%)' for percentual in percentuais3.flatten()]
 
 # Envios
 fig_bar_chart3 = px.bar(df_dados3.T,
@@ -211,15 +580,10 @@ fig_total_envios.update_layout(legend_title_text='Legenda')
 st.plotly_chart(fig_total_envios, use_container_width=True)
 
 
-st.header("❌ Erros")
-col1, col2 = st.columns(2)
+#st.header("❌ Erros")
+st.markdown(f"<h3 style='font-size: 24px'>❌ Erros</h3>", unsafe_allow_html=True)
 
-maior_valor4 = df_dados4.values.max()
-menor_valor4 = df_dados4.values.min()
-soma_total4 = df_dados4.values.sum()
-soma_total4_mes = int(df_dados4_mes.sum().sum())
-percentuais4 = (df_dados4.values / soma_total4) * 100
-percentuais_formatados4 = [f'({percentual:.0f}%)' for percentual in percentuais4.flatten()]
+col1, col2 = st.columns(2)
 
 # Erros
 fig_bar_chart4 = px.bar(df_dados4.T,
@@ -238,138 +602,6 @@ fig_total_revisoes.update_xaxes(title_text='Mês')
 fig_total_revisoes.update_layout(showlegend=False)
 st.plotly_chart(fig_total_revisoes, use_container_width=True)
 
-
-
-# ------- Comparação entre dois meses ------- #
-
-st.header(f"📉 Comparação entre dois meses")
-
-# Lista de todos os meses do ano
-all_months = list(calendar.month_name)[1:] + ['média anual']
-
-# Adicione uma opção para selecionar o tipo de comparação
-selected_comparison_type = st.selectbox(
-    "Selecione o tipo de comparação:",
-    ["Atrasos", "Revisões", "Envios", "Erros"]
-)
-
-try:
-    # Verifica se um tipo de comparação foi selecionado
-    if selected_comparison_type:
-        # Adicione uma opção para selecionar dois meses
-        selected_months = st.multiselect(
-            "Selecione dois meses para comparação:",
-            all_months,
-            default=['média anual'], # Inicia vazio
-            key='selected_months'  # Adiciona uma chave para identificar o componente
-        )
-
-        if len(selected_months) > 2:
-            st.warning("Selecione apenas dois meses para comparação.")
-            selected_months = selected_months.sorted()[:2]  # Pega apenas os dois primeiros meses
-
-        # Verifica se pelo menos dois meses foram selecionados
-        elif len(selected_months) == 2:
-
-            # Ordena os meses automaticamente
-            selected_months = sorted(selected_months, key=lambda x: (list(calendar.month_name).index(x) if x in list(calendar.month_name) else float('inf')))
-
-            # Filtra os dados para os meses e o tipo de comparação selecionados
-            if selected_comparison_type == "Atrasos":
-                df_selected_data = df_dados_mes.loc[df_dados4_mes.index.isin(selected_months)]
-                selected_columns = df_dados_mes.columns
-            elif selected_comparison_type == "Revisões":
-                df_selected_data = df_dados2_mes.loc[df_dados4_mes.index.isin(selected_months)]
-                selected_columns = df_dados2_mes.columns
-            elif selected_comparison_type == "Envios":
-                df_selected_data = df_dados3_mes.loc[df_dados4_mes.index.isin(selected_months)]
-                selected_columns = df_dados3_mes.columns
-            elif selected_comparison_type == "Erros":
-                df_selected_data = df_dados4_mes.loc[df_dados4_mes.index.isin(selected_months)]
-                selected_columns = df_dados4_mes.columns
-
-            # Adiciona uma condição para a média anual
-            if 'média anual' in selected_months:
-                # Filtra os dados para os meses e o tipo de comparação selecionados
-                if selected_comparison_type == "Atrasos":
-                    df_selected_data = df_dados_mes.loc[df_dados4_mes.index.isin(selected_months)]
-                    df_media_anual = df_dados_mes.mean().round(0)
-                elif selected_comparison_type == "Revisões":
-                    df_selected_data = df_dados2_mes.loc[df_dados4_mes.index.isin(selected_months)]
-                    df_media_anual = df_dados2_mes.mean().round(0)
-                elif selected_comparison_type == "Envios":
-                    df_selected_data = df_dados3_mes.loc[df_dados4_mes.index.isin(selected_months)]
-                    df_media_anual = df_dados3_mes.mean().round(0)
-                elif selected_comparison_type == "Erros":
-                    df_selected_data = df_dados4_mes.loc[df_dados4_mes.index.isin(selected_months)]
-                    df_media_anual = df_dados4_mes.mean().round(0)
-
-                # Adiciona a média anual como uma nova linha no DataFrame
-                df_selected_data.loc['média anual'] = df_media_anual
-
-                print(df_media_anual)
-
-            st.markdown(f"<h1 style='font-size: 24px'>Comparação de {selected_comparison_type} entre {selected_months[1]} e {selected_months[0]}</h1>", unsafe_allow_html=True)
-
-            # Soma todas as colunas e verifica se houve aumento ou queda
-            soma_mais_recente = df_selected_data.loc[selected_months[1]].sum()
-            soma_anterior = df_selected_data.loc[selected_months[0]].sum()
-            if 'média anual' in selected_months:
-                aumento_ou_queda = "aumento ⬆" if soma_mais_recente < soma_anterior else "queda ⬇"
-            else:
-                aumento_ou_queda = "aumento ⬆" if soma_mais_recente > soma_anterior else "queda ⬇"
-            
-            # Calcula a diferença entre os meses selecionados
-            diferenca_dados = df_selected_data.diff().iloc[1]
-            diferenca_total = int(abs(diferenca_dados.sum()))
-
-            # Adiciona formatação de cor ao texto 'queda' e 'aumento'
-            if selected_comparison_type == 'Envios':
-                color = 'green' if aumento_ou_queda == 'aumento ⬆' else 'red'
-            else:
-                color = 'red' if aumento_ou_queda == 'aumento ⬆' else 'green'
-            styled_text = f"<span style='color: {color};'>{aumento_ou_queda}</span>"
-
-            # Exibe o texto de comparação total
-            st.markdown(f"<strong>Total:</strong> Houve {styled_text} de {diferenca_total} {selected_comparison_type.lower()} entre {selected_months[1]} e {selected_months[0]}.", unsafe_allow_html=True)
-
-            # Exibe o texto de comparação para cada coluna
-            for coluna in selected_columns:
-                if 'média anual' in selected_months:
-                    aumento_ou_queda = "aumento ⬆" if df_selected_data.loc[selected_months[1], coluna] < df_selected_data.loc[selected_months[0], coluna] else "queda ⬇"
-                else:
-                    aumento_ou_queda = "aumento ⬆" if df_selected_data.loc[selected_months[1], coluna] > df_selected_data.loc[selected_months[0], coluna] else "queda ⬇"
-
-                valor_diferenca = int(abs(diferenca_dados[coluna]))
-                # Adiciona formatação de cor ao texto 'queda' e 'aumento'
-                if selected_comparison_type == 'Envios':
-                    color = 'green' if aumento_ou_queda == 'aumento ⬆' else 'red'
-                else:
-                    color = 'red' if aumento_ou_queda == 'aumento ⬆' else 'green'
-                styled_text = f"<span style='color: {color};'>{aumento_ou_queda}</span>"
-
-                st.markdown(f"<strong>{coluna}</strong>: Houve {styled_text} de {valor_diferenca} {selected_comparison_type.lower()} entre {selected_months[1]} e {selected_months[0]}.", unsafe_allow_html=True)
-
-            # Exibe um gráfico de linha para a comparação
-            fig_comparacao = px.line(df_selected_data, labels={'value': f'Qtd de {selected_comparison_type.lower()}'}, title=f'Total de {selected_comparison_type.lower()} por mês')
-            categorias_ordenadas = ['média anual'] + df_selected_data.index.tolist()
-            if 'média anual' in selected_months:
-                fig_comparacao.update_xaxes(title_text='Mês', categoryorder='array', categoryarray=categorias_ordenadas)
-            else:
-                fig_comparacao.update_xaxes(title_text='Mês', categoryorder='total ascending')
-            st.plotly_chart(fig_comparacao, use_container_width=True)
-            
-            print(selected_months)
-
-                
-        elif len(selected_months) == 1:
-            st.warning("Selecione duas colunas para comparação.")
-        else:
-            st.info("Selecione pelo menos uma coluna para comparação.")
-    else:
-        st.info("Selecione um tipo de comparação.")
-except KeyError as e:
-    st.warning(f"Erro ao acessar dados: {e}")
 
 
 # Menu de filtros
