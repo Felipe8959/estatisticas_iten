@@ -25,7 +25,6 @@ df[date_format] = df[date_format].apply(pd.to_datetime, errors='coerce')
 # Leitura do arquivo 'dados.xlsx'
 arquivo_dados = "dados.xlsx"
 
-
 # Atrasos
 df_dados = pd.read_excel(arquivo_dados, sheet_name="atrasos")
 df_dados = df_dados.rename(index={0: 'Técnicos', 1: 'REP'})
@@ -45,7 +44,7 @@ percentuais_formatados = [f'({percentual:.0f}%)' for percentual in percentuais.f
 
 # Revisões
 df_dados2 = pd.read_excel(arquivo_dados, sheet_name="revisoes")
-df_dados2 = df_dados2.rename(index={0: 'Técnicos', 1: 'REP'})
+df_dados2 = df_dados2.rename(index={0: 'REP', 1: 'Técnico', 2: 'Comercial', 3: 'Cliente'})
 
 df_dados2_mes = pd.read_excel(arquivo_dados, sheet_name="revisoes2")
 meses_do_ano = {i: calendar.month_name[i] for i in range(0, 13)}
@@ -136,17 +135,17 @@ else:
 
 
 st.markdown(
-    f"<h2 style='text-align: center; font-size: 32px'>Relatório mensal ITEN ({mes_atual}/{ano_atual})</h2>",
+    f"<h1 style='text-align: center; font-size: 28px'>Relatório ITEN ({mes_atual}/{ano_atual})</h1>",
     unsafe_allow_html=True
     )
 
 
-# ------------------------------------------- #
-# ------- Comparação entre dois meses ------- #
-# ------------------------------------------- #
+# -------------------------------------------------------- #
+# ------- Comparação entre média anual e mes atual ------- #
+# -------------------------------------------------------- #
 
 st.markdown(
-    f"<p style='text-align: left; font-size: 24px'><strong>📉 Desempenho</strong></p>",
+    f"<h1 style='text-align: left; font-size: 22px'>📉 Desempenho</h1>",
     unsafe_allow_html=True
     )
 #st.markdown(f"<h3 style='font-size: 24px'>📉 Desempenho</h3>", unsafe_allow_html=True)
@@ -165,7 +164,7 @@ try:
     # Adicione uma opção para selecionar dois meses
     selected_months =['média anual', mes_atual]
 
-    st.markdown(f"<h1 style='font-size: 24px'>Comparação entre {selected_months[1]} e {selected_months[0]}</h1>", unsafe_allow_html=True)
+    st.markdown(f"<h2 style='font-size: 20px'>Comparação entre {selected_months[1]} e {selected_months[0]}</h2>", unsafe_allow_html=True)
 
     if len(selected_months) > 2:
         st.warning("Selecione apenas dois meses para comparação.")
@@ -183,16 +182,16 @@ try:
         # ----------------------- #
         selected_comparison_type = 'Atrasos'
 
-        st.markdown(f"<h1 style='font-size: 20px'>🕐 Atrasos ({soma_total})</h1>", unsafe_allow_html=True)
+        st.markdown(f"<h3 style='font-size: 20px'>🕐 Atrasos ({soma_total})</h3>", unsafe_allow_html=True)
 
         # Filtra os dados para os meses e o tipo de comparação selecionados
-        df_selected_data = df_dados_mes.loc[df_dados4_mes.index.isin(selected_months)]
+        df_selected_data = df_dados_mes.loc[df_dados_mes.index.isin(selected_months)]
         selected_columns = df_dados_mes.columns
 
         # Adiciona uma condição para a média anual
         if 'média anual' in selected_months:
             # Filtra os dados para os meses e o tipo de comparação selecionados
-            df_selected_data = df_dados_mes.loc[df_dados4_mes.index.isin(selected_months)]
+            df_selected_data = df_dados_mes.loc[df_dados_mes.index.isin(selected_months)]
             df_media_anual = df_dados_mes.mean().round(0)
 
             # Adiciona a média anual como uma nova linha no DataFrame
@@ -210,6 +209,7 @@ try:
         # Calcula a diferença entre os meses selecionados
         diferenca_dados = df_selected_data.diff().iloc[1]
         diferenca_total = int(abs(diferenca_dados.sum()))
+        percentual_total = (diferenca_total / df_selected_data.loc['média anual'].sum()) * 100
 
         if diferenca_total == 0:
             aumento_ou_queda = 'estabilização'
@@ -221,36 +221,43 @@ try:
             color = 'green'
         else:
             color = 'blue'
+        
+        percentual_total_text = f"<span style='color:{color};'>(+{percentual_total:.1f}%)</span>"
     
-
         styled_text = f"<span style='color: {color};'>{aumento_ou_queda}</span>"
 
         # Exibe o texto de comparação total
-        st.markdown(f"<strong>Total:</strong> {styled_text} de {diferenca_total} {selected_comparison_type.lower()} entre {selected_months[1]} e {selected_months[0]}.", unsafe_allow_html=True)
+        st.markdown(f"<strong>Total:</strong> {styled_text} de {diferenca_total} atrasos {percentual_total_text} entre {selected_months[1]} e {selected_months[0]}. <strong>Média anual =</strong> {df_media_anual.sum():.0f} {selected_comparison_type.lower()}.", unsafe_allow_html=True)
 
-        # Exibe o texto de comparação para cada coluna
+        #Calcula a porcentagem de aumento/queda de cada coluna em relação a media anual
         for coluna in selected_columns:
-            if 'média anual' in selected_months:
-                aumento_ou_queda = "aumento ⬆" if df_selected_data.loc[selected_months[1], coluna] < df_selected_data.loc[selected_months[0], coluna] else "queda ⬇"
-            else:
-                aumento_ou_queda = "aumento ⬆" if df_selected_data.loc[selected_months[1], coluna] > df_selected_data.loc[selected_months[0], coluna] else "queda ⬇"
+            if coluna != 'média anual':
+                atrasos_mes_atual = df_dados_mes.loc[mes_atual, coluna]
+                atrasos_media_anual = df_media_anual[coluna]
 
-            valor_diferenca = int(abs(diferenca_dados[coluna]))
+                # Calcula a diferença e a porcentagem
+                diferenca = atrasos_mes_atual - atrasos_media_anual
+                percentual = (diferenca / atrasos_media_anual) * 100
 
-            if valor_diferenca == 0:
-                aumento_ou_queda = "estabilização"
-                
-            # Adiciona formatação de cor ao texto 'queda', 'aumento' e estabilização
-            if aumento_ou_queda == 'aumento ⬆':
-                color = 'red'
-            elif aumento_ou_queda == 'queda ⬇':
-                color = 'green'
-            else:
-                color = 'blue'
+                if diferenca > 0:
+                    percentual = f"<span style='color:red;'>(+{percentual:.1f}%)</span>"
+                elif diferenca < 0:
+                    percentual = f"<span style='color:green;'>(+{percentual:.1f}%)</span>"
+                else:
+                    percentual = f"<span style='color:blue;'>(+{percentual:.1f}%)</span>"
 
-            styled_text = f"<span style='color: {color};'>{aumento_ou_queda}</span>"
 
-            st.markdown(f"<strong>{coluna}</strong>: {styled_text} de {valor_diferenca} {selected_comparison_type.lower()} entre {selected_months[1]} e {selected_months[0]}.", unsafe_allow_html=True)
+                # Determina se é aumento, queda ou estabilização e aplica a cor diretamente à variável tipo_atraso
+                if diferenca > 0:
+                    tipo_atraso = "<span style='color:red;'>aumento ⬆</span>"
+                elif diferenca < 0:
+                    tipo_atraso = "<span style='color:green;'>queda ⬇</span>"
+                else:
+                    tipo_atraso = "<span style='color:blue;'>estabilização</span>"
+
+                # Exibe a mensagem com a porcentagem colorida e sinais de "+" ou "-"
+                mensagem = f"<strong>{coluna} ({atrasos_mes_atual:.0f}):</strong> {tipo_atraso} de {int(abs(diferenca))} {selected_comparison_type.lower()} {percentual} entre média anual e {mes_atual}. <strong>Média anual =</strong> {atrasos_media_anual:.0f} {selected_comparison_type.lower()}."
+                st.markdown(mensagem, unsafe_allow_html=True)
 
 
 
@@ -259,16 +266,16 @@ try:
         # ---------------------- #
         selected_comparison_type = 'Revisões'
 
-        st.markdown(f"<h1 style='font-size: 20px'>🔧 Revisões ({soma_total2})</h1>", unsafe_allow_html=True)
+        st.markdown(f"<h3 style='font-size: 20px'>🔧 Revisões ({soma_total2})</h3>", unsafe_allow_html=True)
 
         # Filtra os dados para os meses e o tipo de comparação selecionados
-        df_selected_data = df_dados2_mes.loc[df_dados4_mes.index.isin(selected_months)]
+        df_selected_data = df_dados2_mes.loc[df_dados2_mes.index.isin(selected_months)]
         selected_columns = df_dados2_mes.columns
 
         # Adiciona uma condição para a média anual
         if 'média anual' in selected_months:
             # Filtra os dados para os meses e o tipo de comparação selecionados
-            df_selected_data = df_dados2_mes.loc[df_dados4_mes.index.isin(selected_months)]
+            df_selected_data = df_dados2_mes.loc[df_dados2_mes.index.isin(selected_months)]
             df_media_anual = df_dados2_mes.mean().round(0)
 
             # Adiciona a média anual como uma nova linha no DataFrame
@@ -286,6 +293,8 @@ try:
         # Calcula a diferença entre os meses selecionados
         diferenca_dados = df_selected_data.diff().iloc[1]
         diferenca_total = int(abs(diferenca_dados.sum()))
+        percentual_total = (diferenca_total / df_selected_data.loc['média anual'].sum()) * 100
+
 
         if diferenca_total == 0:
             aumento_ou_queda = 'estabilização'
@@ -297,36 +306,44 @@ try:
             color = 'green'
         else:
             color = 'blue'
+
+        percentual_total_text = f"<span style='color:{color};'>(+{percentual_total:.1f}%)</span>"
     
 
         styled_text = f"<span style='color: {color};'>{aumento_ou_queda}</span>"
 
         # Exibe o texto de comparação total
-        st.markdown(f"<strong>Total:</strong> {styled_text} de {diferenca_total} {selected_comparison_type.lower()} entre {selected_months[1]} e {selected_months[0]}.", unsafe_allow_html=True)
+        st.markdown(f"<strong>Total:</strong> {styled_text} de {diferenca_total} {selected_comparison_type.lower()} {percentual_total_text} entre {selected_months[1]} e {selected_months[0]}. <strong>Média anual =</strong> {df_media_anual.sum():.0f} {selected_comparison_type.lower()}.", unsafe_allow_html=True)
 
-        # Exibe o texto de comparação para cada coluna
+        #Calcula a porcentagem de aumento/queda de cada coluna em relação a media anual
         for coluna in selected_columns:
-            if 'média anual' in selected_months:
-                aumento_ou_queda = "aumento ⬆" if df_selected_data.loc[selected_months[1], coluna] < df_selected_data.loc[selected_months[0], coluna] else "queda ⬇"
-            else:
-                aumento_ou_queda = "aumento ⬆" if df_selected_data.loc[selected_months[1], coluna] > df_selected_data.loc[selected_months[0], coluna] else "queda ⬇"
+            if coluna != 'média anual':
+                atrasos_mes_atual = df_dados2_mes.loc[mes_atual, coluna]
+                atrasos_media_anual = df_media_anual[coluna]
 
-            valor_diferenca = int(abs(diferenca_dados[coluna]))
+                # Calcula a diferença e a porcentagem
+                diferenca = atrasos_mes_atual - atrasos_media_anual
+                percentual = (diferenca / atrasos_media_anual) * 100
 
-            if valor_diferenca == 0:
-                aumento_ou_queda = "estabilização"
-                
-            # Adiciona formatação de cor ao texto 'queda', 'aumento' e estabilização
-            if aumento_ou_queda == 'aumento ⬆':
-                color = 'red'
-            elif aumento_ou_queda == 'queda ⬇':
-                color = 'green'
-            else:
-                color = 'blue'
+                if diferenca > 0:
+                    percentual = f"<span style='color:red;'>(+{percentual:.1f}%)</span>"
+                elif diferenca < 0:
+                    percentual = f"<span style='color:green;'>(+{percentual:.1f}%)</span>"
+                else:
+                    percentual = f"<span style='color:blue;'>(+{percentual:.1f}%)</span>"
 
-            styled_text = f"<span style='color: {color};'>{aumento_ou_queda}</span>"
 
-            st.markdown(f"<strong>{coluna}</strong>: {styled_text} de {valor_diferenca} {selected_comparison_type.lower()} entre {selected_months[1]} e {selected_months[0]}.", unsafe_allow_html=True)
+                # Determina se é aumento, queda ou estabilização e aplica a cor diretamente à variável tipo_atraso
+                if diferenca > 0:
+                    tipo_atraso = "<span style='color:red;'>aumento ⬆</span>"
+                elif diferenca < 0:
+                    tipo_atraso = "<span style='color:green;'>queda ⬇</span>"
+                else:
+                    tipo_atraso = "<span style='color:blue;'>estabilização</span>"
+
+                # Exibe a mensagem com a porcentagem colorida e sinais de "+" ou "-"
+                mensagem = f"<strong>{coluna} ({atrasos_mes_atual:.0f}):</strong> {tipo_atraso} de {int(abs(diferenca))} {selected_comparison_type.lower()} {percentual} entre média anual e {mes_atual}. <strong>Média anual =</strong> {atrasos_media_anual:.0f} {selected_comparison_type.lower()}."
+                st.markdown(mensagem, unsafe_allow_html=True)
 
 
 
@@ -335,16 +352,16 @@ try:
         # ---------------------- #
         selected_comparison_type = 'Envios'
 
-        st.markdown(f"<h1 style='font-size: 20px'>✉️ Envios ({soma_total3})</h1>", unsafe_allow_html=True)
+        st.markdown(f"<h3 style='font-size: 20px'>✉️ Envios ({soma_total3})</h3>", unsafe_allow_html=True)
 
         # Filtra os dados para os meses e o tipo de comparação selecionados
-        df_selected_data = df_dados3_mes.loc[df_dados4_mes.index.isin(selected_months)]
+        df_selected_data = df_dados3_mes.loc[df_dados3_mes.index.isin(selected_months)]
         selected_columns = df_dados3_mes.columns
 
         # Adiciona uma condição para a média anual
         if 'média anual' in selected_months:
             # Filtra os dados para os meses e o tipo de comparação selecionados
-            df_selected_data = df_dados3_mes.loc[df_dados4_mes.index.isin(selected_months)]
+            df_selected_data = df_dados3_mes.loc[df_dados3_mes.index.isin(selected_months)]
             df_media_anual = df_dados3_mes.mean().round(0)
 
             # Adiciona a média anual como uma nova linha no DataFrame
@@ -362,6 +379,7 @@ try:
         # Calcula a diferença entre os meses selecionados
         diferenca_dados = df_selected_data.diff().iloc[1]
         diferenca_total = int(abs(diferenca_dados.sum()))
+        percentual_total = (diferenca_total / df_selected_data.loc['média anual'].sum()) * 100
 
         if diferenca_total == 0:
             aumento_ou_queda = 'estabilização'
@@ -373,43 +391,51 @@ try:
             color = 'red'
         else:
             color = 'blue'
+        
+        percentual_total_text = f"<span style='color:{color};'>(+{percentual_total:.1f}%)</span>"
     
+
         styled_text = f"<span style='color: {color};'>{aumento_ou_queda}</span>"
 
         # Exibe o texto de comparação total
-        st.markdown(f"<strong>Total:</strong> {styled_text} de {diferenca_total} {selected_comparison_type.lower()} entre {selected_months[1]} e {selected_months[0]}.", unsafe_allow_html=True)
+        st.markdown(f"<strong>Total:</strong> {styled_text} de {diferenca_total} {selected_comparison_type.lower()} {percentual_total_text} entre {selected_months[1]} e {selected_months[0]}. <strong>Média anual =</strong> {df_media_anual.sum():.0f} {selected_comparison_type.lower()}.", unsafe_allow_html=True)
 
-        # Exibe o texto de comparação para cada coluna
+        #Calcula a porcentagem de aumento/queda de cada coluna em relação a media anual
         for coluna in selected_columns:
-            if 'média anual' in selected_months:
-                aumento_ou_queda = "aumento ⬆" if df_selected_data.loc[selected_months[1], coluna] < df_selected_data.loc[selected_months[0], coluna] else "queda ⬇"
-            else:
-                aumento_ou_queda = "aumento ⬆" if df_selected_data.loc[selected_months[1], coluna] > df_selected_data.loc[selected_months[0], coluna] else "queda ⬇"
+            if coluna != 'média anual':
+                atrasos_mes_atual = df_dados3_mes.loc[mes_atual, coluna]
+                atrasos_media_anual = df_media_anual[coluna]
 
-            valor_diferenca = int(abs(diferenca_dados[coluna]))
+                # Calcula a diferença e a porcentagem
+                diferenca = atrasos_mes_atual - atrasos_media_anual
+                percentual = (diferenca / atrasos_media_anual) * 100
 
-            if valor_diferenca == 0:
-                aumento_ou_queda = "estabilização"
-                
-            # Adiciona formatação de cor ao texto 'queda', 'aumento' e estabilização
-            if aumento_ou_queda == 'aumento ⬆':
-                color = 'green'
-            elif aumento_ou_queda == 'queda ⬇':
-                color = 'red'
-            else:
-                color = 'blue'
+                if diferenca > 0:
+                    percentual = f"<span style='color:green;'>(+{percentual:.1f}%)</span>"
+                elif diferenca < 0:
+                    percentual = f"<span style='color:red;'>(+{percentual:.1f}%)</span>"
+                else:
+                    percentual = f"<span style='color:blue;'>(+{percentual:.1f}%)</span>"
 
-            styled_text = f"<span style='color: {color};'>{aumento_ou_queda}</span>"
 
-            st.markdown(f"<strong>{coluna}</strong>: {styled_text} de {valor_diferenca} {selected_comparison_type.lower()} entre {selected_months[1]} e {selected_months[0]}.", unsafe_allow_html=True)
+                # Determina se é aumento, queda ou estabilização e aplica a cor diretamente à variável tipo_atraso
+                if diferenca > 0:
+                    tipo_atraso = "<span style='color:green;'>aumento ⬆</span>"
+                elif diferenca < 0:
+                    tipo_atraso = "<span style='color:red;'>queda ⬇</span>"
+                else:
+                    tipo_atraso = "<span style='color:blue;'>estabilização</span>"
 
+                # Exibe a mensagem com a porcentagem colorida e sinais de "+" ou "-"
+                mensagem = f"<strong>{coluna} ({atrasos_mes_atual:.0f}):</strong> {tipo_atraso} de {int(abs(diferenca))} {selected_comparison_type.lower()} {percentual} entre média anual e {mes_atual}. <strong>Média anual =</strong> {atrasos_media_anual:.0f} {selected_comparison_type.lower()}."
+                st.markdown(mensagem, unsafe_allow_html=True)
 
         # ----------------------- #
         # -------- Erros -------- #
         # ----------------------- #
         selected_comparison_type = 'Erros'
 
-        st.markdown(f"<h1 style='font-size: 20px'>❌ Erros ({soma_total4})</h1>", unsafe_allow_html=True)
+        st.markdown(f"<h3 style='font-size: 20px'>❌ Erros ({soma_total4})</h3>", unsafe_allow_html=True)
 
         # Filtra os dados para os meses e o tipo de comparação selecionados
         df_selected_data = df_dados4_mes.loc[df_dados4_mes.index.isin(selected_months)]
@@ -436,6 +462,8 @@ try:
         # Calcula a diferença entre os meses selecionados
         diferenca_dados = df_selected_data.diff().iloc[1]
         diferenca_total = int(abs(diferenca_dados.sum()))
+        percentual_total = (diferenca_total / df_selected_data.loc['média anual'].sum()) * 100
+
 
         if diferenca_total == 0:
             aumento_ou_queda = 'estabilização'
@@ -447,36 +475,44 @@ try:
             color = 'green'
         else:
             color = 'blue'
+
+        percentual_total_text = f"<span style='color:{color};'>(+{percentual_total:.1f}%)</span>"
     
+
         styled_text = f"<span style='color: {color};'>{aumento_ou_queda}</span>"
 
         # Exibe o texto de comparação total
-        st.markdown(f"<strong>Total:</strong> {styled_text} de {diferenca_total} {selected_comparison_type.lower()} entre {selected_months[1]} e {selected_months[0]}.", unsafe_allow_html=True)
+        st.markdown(f"<strong>Total:</strong> {styled_text} de {diferenca_total} {selected_comparison_type.lower()} {percentual_total_text} entre {selected_months[1]} e {selected_months[0]}. <strong>Média anual =</strong> {df_media_anual.sum():.0f} {selected_comparison_type.lower()}.", unsafe_allow_html=True)
 
-        # Exibe o texto de comparação para cada coluna
+        #Calcula a porcentagem de aumento/queda de cada coluna em relação a media anual
         for coluna in selected_columns:
-            if 'média anual' in selected_months:
-                aumento_ou_queda = "aumento ⬆" if df_selected_data.loc[selected_months[1], coluna] < df_selected_data.loc[selected_months[0], coluna] else "queda ⬇"
-            else:
-                aumento_ou_queda = "aumento ⬆" if df_selected_data.loc[selected_months[1], coluna] > df_selected_data.loc[selected_months[0], coluna] else "queda ⬇"
+            if coluna != 'média anual':
+                atrasos_mes_atual = df_dados4_mes.loc[mes_atual, coluna]
+                atrasos_media_anual = df_media_anual[coluna]
 
-            valor_diferenca = int(abs(diferenca_dados[coluna]))
+                # Calcula a diferença e a porcentagem
+                diferenca = atrasos_mes_atual - atrasos_media_anual
+                percentual = (diferenca / atrasos_media_anual) * 100
 
-            if valor_diferenca == 0:
-                aumento_ou_queda = "estabilização"
-                
-            # Adiciona formatação de cor ao texto 'queda', 'aumento' e estabilização
-            if aumento_ou_queda == 'aumento ⬆':
-                color = 'red'
-            elif aumento_ou_queda == 'queda ⬇':
-                color = 'green'
-            else:
-                color = 'blue'
+                if diferenca > 0:
+                    percentual = f"<span style='color:red;'>(+{percentual:.1f}%)</span>"
+                elif diferenca < 0:
+                    percentual = f"<span style='color:green;'>(+{percentual:.1f}%)</span>"
+                else:
+                    percentual = f"<span style='color:blue;'>(+{percentual:.1f}%)</span>"
 
-            styled_text = f"<span style='color: {color};'>{aumento_ou_queda}</span>"
 
-            st.markdown(f"<strong>{coluna}</strong>: {styled_text} de {valor_diferenca} {selected_comparison_type.lower()} entre {selected_months[1]} e {selected_months[0]}.", unsafe_allow_html=True)
+                # Determina se é aumento, queda ou estabilização e aplica a cor diretamente à variável tipo_atraso
+                if diferenca > 0:
+                    tipo_atraso = "<span style='color:red;'>aumento ⬆</span>"
+                elif diferenca < 0:
+                    tipo_atraso = "<span style='color:green;'>queda ⬇</span>"
+                else:
+                    tipo_atraso = "<span style='color:blue;'>estabilização</span>"
 
+                # Exibe a mensagem com a porcentagem colorida e sinais de "+" ou "-"
+                mensagem = f"<strong>{coluna} ({atrasos_mes_atual:.0f}):</strong> {tipo_atraso} de {int(abs(diferenca))} {selected_comparison_type.lower()} {percentual} entre média anual e {mes_atual}. <strong>Média anual =</strong> {atrasos_media_anual:.0f} {selected_comparison_type.lower()}."
+                st.markdown(mensagem, unsafe_allow_html=True)
 
 
 
@@ -533,8 +569,15 @@ st.plotly_chart(fig_total_atrasos, use_container_width=True)
 
 
 
-#st.header("🔧 Revisões")
-st.markdown(f"<h3 style='font-size: 24px'>🔧 Revisões</h3>", unsafe_allow_html=True)
+st.header("🔧 Revisões")
+
+# Calcular estatísticas
+maior_valor2 = df_dados2.values.max()
+menor_valor2 = df_dados2.values.min()
+soma_total2 = df_dados2.values.sum()
+soma_total2_mes = int(df_dados2_mes.sum().sum())
+percentuais2 = (df_dados2.values / soma_total2) * 100
+percentuais_formatados2 = [f'({percentual:.0f}%)' for percentual in percentuais2.flatten()]
 
 # Revisões
 fig_bar_chart2 = px.bar(df_dados2.T, labels={'value': 'Qtd de revisões'}, 
@@ -556,9 +599,15 @@ fig_total_revisoes.update_layout(legend_title_text='Legenda')
 st.plotly_chart(fig_total_revisoes, use_container_width=True)
 
 
-#st.header("✉️ Envios")
-st.markdown(f"<h3 style='font-size: 24px'>✉️ Envios</h3>", unsafe_allow_html=True)
+st.header("✉️ Envios")
 
+# Calcular estatísticas
+maior_valor3 = df_dados3.values.max()
+menor_valor3 = df_dados3.values.min()
+soma_total3 = df_dados3.values.sum()
+soma_total3_mes = int(df_dados3_mes.sum().sum())
+percentuais3 = (df_dados3.values / soma_total3) * 100
+percentuais_formatados3 = [f'({percentual:.0f}%)' for percentual in percentuais3.flatten()]
 
 # Envios
 fig_bar_chart3 = px.bar(df_dados3.T,
@@ -601,7 +650,6 @@ fig_total_revisoes = px.line(df_dados4_mes,
 fig_total_revisoes.update_xaxes(title_text='Mês')
 fig_total_revisoes.update_layout(showlegend=False)
 st.plotly_chart(fig_total_revisoes, use_container_width=True)
-
 
 
 # Menu de filtros
