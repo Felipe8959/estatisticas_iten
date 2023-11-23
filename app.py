@@ -217,12 +217,13 @@ try:
         # Adiciona formatação de cor ao texto 'queda', 'aumento' e estabilização
         if aumento_ou_queda == 'aumento ⬆':
             color = 'red'
+            percentual_total_text = f"<span style='color:{color};'>(+{percentual_total:.1f}%)</span>"
         elif aumento_ou_queda == 'queda ⬇':
             color = 'green'
+            percentual_total_text = f"<span style='color:{color};'>({percentual_total:.1f}%)</span>"
         else:
             color = 'blue'
-        
-        percentual_total_text = f"<span style='color:{color};'>(+{percentual_total:.1f}%)</span>"
+            percentual_total_text = f"<span style='color:{color};'>({percentual_total:.1f}%)</span>"
     
         styled_text = f"<span style='color: {color};'>{aumento_ou_queda}</span>"
 
@@ -242,9 +243,9 @@ try:
                 if diferenca > 0:
                     percentual = f"<span style='color:red;'>(+{percentual:.1f}%)</span>"
                 elif diferenca < 0:
-                    percentual = f"<span style='color:green;'>(+{percentual:.1f}%)</span>"
+                    percentual = f"<span style='color:green;'>({percentual:.1f}%)</span>"
                 else:
-                    percentual = f"<span style='color:blue;'>(+{percentual:.1f}%)</span>"
+                    percentual = f"<span style='color:blue;'>({percentual:.1f}%)</span>"
 
 
                 # Determina se é aumento, queda ou estabilização e aplica a cor diretamente à variável tipo_atraso
@@ -302,12 +303,13 @@ try:
         # Adiciona formatação de cor ao texto 'queda', 'aumento' e estabilização
         if aumento_ou_queda == 'aumento ⬆':
             color = 'red'
+            percentual_total_text = f"<span style='color:{color};'>(+{percentual_total:.1f}%)</span>"
         elif aumento_ou_queda == 'queda ⬇':
             color = 'green'
+            percentual_total_text = f"<span style='color:{color};'>({percentual_total:.1f}%)</span>"
         else:
             color = 'blue'
-
-        percentual_total_text = f"<span style='color:{color};'>(+{percentual_total:.1f}%)</span>"
+            percentual_total_text = f"<span style='color:{color};'>({percentual_total:.1f}%)</span>"
     
 
         styled_text = f"<span style='color: {color};'>{aumento_ou_queda}</span>"
@@ -328,9 +330,9 @@ try:
                 if diferenca > 0:
                     percentual = f"<span style='color:red;'>(+{percentual:.1f}%)</span>"
                 elif diferenca < 0:
-                    percentual = f"<span style='color:green;'>(+{percentual:.1f}%)</span>"
+                    percentual = f"<span style='color:green;'>({percentual:.1f}%)</span>"
                 else:
-                    percentual = f"<span style='color:blue;'>(+{percentual:.1f}%)</span>"
+                    percentual = f"<span style='color:blue;'>({percentual:.1f}%)</span>"
 
 
                 # Determina se é aumento, queda ou estabilização e aplica a cor diretamente à variável tipo_atraso
@@ -341,7 +343,6 @@ try:
                 else:
                     tipo_atraso = "<span style='color:blue;'>estabilização</span>"
 
-                # Exibe a mensagem com a porcentagem colorida e sinais de "+" ou "-"
                 mensagem = f"<strong>{coluna} ({atrasos_mes_atual:.0f}):</strong> {tipo_atraso} de {int(abs(diferenca))} {selected_comparison_type.lower()} {percentual} entre média anual e {mes_atual}. <strong>Média anual =</strong> {atrasos_media_anual:.0f} {selected_comparison_type.lower()}."
                 st.markdown(mensagem, unsafe_allow_html=True)
 
@@ -387,13 +388,14 @@ try:
         # Adiciona formatação de cor ao texto 'queda', 'aumento' e estabilização
         if aumento_ou_queda == 'aumento ⬆':
             color = 'green'
+            percentual_total_text = f"<span style='color:{color};'>(+{percentual_total:.1f}%)</span>"
         elif aumento_ou_queda == 'queda ⬇':
             color = 'red'
+            percentual_total_text = f"<span style='color:{color};'>({percentual_total:.1f}%)</span>"
         else:
             color = 'blue'
-        
-        percentual_total_text = f"<span style='color:{color};'>(+{percentual_total:.1f}%)</span>"
-    
+            percentual_total_text = f"<span style='color:{color};'>({percentual_total:.1f}%)</span>"
+
 
         styled_text = f"<span style='color: {color};'>{aumento_ou_queda}</span>"
 
@@ -413,9 +415,9 @@ try:
                 if diferenca > 0:
                     percentual = f"<span style='color:green;'>(+{percentual:.1f}%)</span>"
                 elif diferenca < 0:
-                    percentual = f"<span style='color:red;'>(+{percentual:.1f}%)</span>"
+                    percentual = f"<span style='color:red;'>({percentual:.1f}%)</span>"
                 else:
-                    percentual = f"<span style='color:blue;'>(+{percentual:.1f}%)</span>"
+                    percentual = f"<span style='color:blue;'>({percentual:.1f}%)</span>"
 
 
                 # Determina se é aumento, queda ou estabilização e aplica a cor diretamente à variável tipo_atraso
@@ -426,7 +428,6 @@ try:
                 else:
                     tipo_atraso = "<span style='color:blue;'>estabilização</span>"
 
-                # Exibe a mensagem com a porcentagem colorida e sinais de "+" ou "-"
                 mensagem = f"<strong>{coluna} ({atrasos_mes_atual:.0f}):</strong> {tipo_atraso} de {int(abs(diferenca))} {selected_comparison_type.lower()} {percentual} entre média anual e {mes_atual}. <strong>Média anual =</strong> {atrasos_media_anual:.0f} {selected_comparison_type.lower()}."
                 st.markdown(mensagem, unsafe_allow_html=True)
 
@@ -471,12 +472,13 @@ try:
         # Adiciona formatação de cor ao texto 'queda', 'aumento' e estabilização
         if aumento_ou_queda == 'aumento ⬆':
             color = 'red'
+            percentual_total_text = f"<span style='color:{color};'>(+{percentual_total:.1f}%)</span>"
         elif aumento_ou_queda == 'queda ⬇':
             color = 'green'
+            percentual_total_text = f"<span style='color:{color};'>(-{percentual_total:.1f}%)</span>"
         else:
             color = 'blue'
-
-        percentual_total_text = f"<span style='color:{color};'>(+{percentual_total:.1f}%)</span>"
+            percentual_total_text = f"<span style='color:{color};'>({percentual_total:.1f}%)</span>"
     
 
         styled_text = f"<span style='color: {color};'>{aumento_ou_queda}</span>"
@@ -497,9 +499,9 @@ try:
                 if diferenca > 0:
                     percentual = f"<span style='color:red;'>(+{percentual:.1f}%)</span>"
                 elif diferenca < 0:
-                    percentual = f"<span style='color:green;'>(+{percentual:.1f}%)</span>"
+                    percentual = f"<span style='color:green;'>({percentual:.1f}%)</span>"
                 else:
-                    percentual = f"<span style='color:blue;'>(+{percentual:.1f}%)</span>"
+                    percentual = f"<span style='color:blue;'>({percentual:.1f}%)</span>"
 
 
                 # Determina se é aumento, queda ou estabilização e aplica a cor diretamente à variável tipo_atraso
@@ -510,7 +512,6 @@ try:
                 else:
                     tipo_atraso = "<span style='color:blue;'>estabilização</span>"
 
-                # Exibe a mensagem com a porcentagem colorida e sinais de "+" ou "-"
                 mensagem = f"<strong>{coluna} ({atrasos_mes_atual:.0f}):</strong> {tipo_atraso} de {int(abs(diferenca))} {selected_comparison_type.lower()} {percentual} entre média anual e {mes_atual}. <strong>Média anual =</strong> {atrasos_media_anual:.0f} {selected_comparison_type.lower()}."
                 st.markdown(mensagem, unsafe_allow_html=True)
 
